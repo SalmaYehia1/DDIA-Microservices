@@ -2,7 +2,7 @@
 
 This project is originally cloned from: [yigiterinc/spring-boot-microservices](https://github.com/yigiterinc/spring-boot-microservices)  
 
-All modifications, enhancements, and additional features in this repository have been made by: **Your Team Name**.
+All modifications, enhancements, and additional features in this repository have been made by our team.
 # spring-boot-microservices
 In this project, multiple microservices communicate with each other to provide the backend services of a minimalistic/sample movie rating application similar to IMDB.
 
