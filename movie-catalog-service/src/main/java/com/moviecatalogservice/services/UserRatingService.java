@@ -32,7 +32,7 @@ public class UserRatingService {
                 @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
         })
     public UserRating getUserRating(@PathVariable("userId") String userId) {
-        String ratingsUrl = "http://ratings-data-service/ratings/" + userId;
+        String ratingsUrl = "http://localhost:8080/fake-movie-db/{id}" + userId;
         return Objects.requireNonNull(restTemplate.getForObject(ratingsUrl, UserRating.class));
     }
 

@@ -70,3 +70,6 @@ public class MovieResource {
         return movie;
     }
 }
+
+/*
+http://localhost:8082/movies/{1}*/
