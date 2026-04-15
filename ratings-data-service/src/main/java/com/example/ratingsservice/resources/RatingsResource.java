@@ -1,24 +1,27 @@
 package com.example.ratingsservice.resources;
 
-import com.example.ratingsservice.models.Rating;
-import com.example.ratingsservice.models.UserRating;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
+import com.example.ratingsservice.models.*;
+import com.example.ratingsservice.repositories.RatingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-@RestController
+@RestController 
+//http requests will be handled by this class
 @RequestMapping("/ratings")
 public class RatingsResource {
 
-    @RequestMapping("/{userId}")
-    public UserRating getRatingsOfUser(@PathVariable String userId) {
-        List<Rating> ratings = Arrays.asList(
-                new Rating("550", 4)
-        );
+    @Autowired
+    private RatingRepository ratingRepository;
 
-        return new UserRating(ratings);
+    @GetMapping("/{userId}")
+    public UserRating getUserRatings(@PathVariable("userId") String userId) {
+        List<Rating> ratings = ratingRepository.findByUserId(userId);
+        return new UserRating(userId, ratings);  //DTO
+    }
+
+    @PostMapping
+    public Rating addRating(@RequestBody Rating rating) {
+        return ratingRepository.save(rating);
     }
 }
