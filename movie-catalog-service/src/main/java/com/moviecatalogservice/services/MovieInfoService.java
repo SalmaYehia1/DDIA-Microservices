@@ -17,29 +17,32 @@ public class MovieInfoService {
         this.restTemplate = restTemplate;
     }
 
+    // EXISTING METHOD (Used for Aggregation)
     @HystrixCommand(fallbackMethod = "getFallbackCatalogItem",
-            threadPoolKey = "movieInfoPool",
-            threadPoolProperties = {
-                @HystrixProperty(name = "coreSize", value = "20"),  // Size of thread pool
-                @HystrixProperty(name = "maxQueueSize", value = "10")   // Waiting in thread queue
-            },
-            commandProperties = {
-                    // Time to cause timeout
-                    @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
-                    // N, Hystrix looks at (analyzes) last N requests.
-                    @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "5"),
-                    // if >= 50 percent of the last N requests fail, break the circuit
-                    @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "50"),
-                    // Wait/Sleep for 5 seconds before sending another request to the failed service
-                    @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
-    })
+        commandProperties = {
+                @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
+                @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "5"),
+                @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "50"),
+                @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
+        })
     public CatalogItem getCatalogItem(Rating rating) {
-        String movieDetailsUrl = "http://movie-info-service/movies/" + rating.getMovieId();
-        Movie movie = this.restTemplate.getForObject(movieDetailsUrl, Movie.class);
+        String movieUrl = "http://movie-info-service/movies/" + rating.getMovieId();
+        Movie movie = restTemplate.getForObject(movieUrl, Movie.class);
         return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
     }
 
     public CatalogItem getFallbackCatalogItem(Rating rating) {
-        return new CatalogItem("Movie name not found", "", rating.getRating());
+        return new CatalogItem("Movie name not found", "Description unavailable", rating.getRating());
+    }
+
+    // NEW METHOD: Exposes raw Movie Info
+    @HystrixCommand(fallbackMethod = "getFallbackMovie")
+    public Movie getMovie(String movieId) {
+        String movieUrl = "http://movie-info-service/movies/" + movieId;
+        return restTemplate.getForObject(movieUrl, Movie.class);
+    }
+
+    public Movie getFallbackMovie(String movieId) {
+        return new Movie(movieId, "Not Found", "Movie info service is currently down.");
     }
 }
