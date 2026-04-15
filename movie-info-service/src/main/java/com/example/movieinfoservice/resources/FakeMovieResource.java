@@ -22,46 +22,30 @@ public class FakeMovieResource {
 
         long start = System.currentTimeMillis();
 
-        // 1️⃣ CHECK CACHE FIRST
+        // 1. Check MongoDB Cache
         Optional<MovieCache> cached = cacheRepository.findById(id);
 
         if (cached.isPresent()) {
             System.out.println("⚡ CACHE HIT");
-
             MovieCache cache = cached.get();
-
             long end = System.currentTimeMillis();
             System.out.println("Response time (CACHE): " + (end - start) + " ms");
 
-            return new Movie(
-                    cache.getMovieId(),
-                    cache.getName(),
-                    cache.getDescription()
-            );
+            return new Movie(cache.getMovieId(), cache.getName(), cache.getDescription());
         }
 
-        // 2️⃣ CACHE MISS → simulate slow API
-        System.out.println("🌐 CACHE MISS → calling fake API");
-
+        // 2. Cache Miss -> Simulate Slow API
+        System.out.println("🌐 CACHE MISS -> calling fake API");
         try {
-            Thread.sleep(2000); // simulate slow external API
+            Thread.sleep(2000); 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        Movie movie = new Movie(
-                id,
-                "Movie " + id,
-                "Generated from fake API"
-        );
+        Movie movie = new Movie(id, "Movie " + id, "Generated from fake API");
 
-        // 3️⃣ SAVE TO CACHE
-        MovieCache movieCache = new MovieCache(
-                movie.getMovieId(),
-                movie.getName(),
-                movie.getDescription()
-        );
-
+        // 3. Save to Cache
+        MovieCache movieCache = new MovieCache(movie.getMovieId(), movie.getName(), movie.getDescription());
         cacheRepository.save(movieCache);
 
         long end = System.currentTimeMillis();
