@@ -1,6 +1,7 @@
 package com.example.movieinfoservice.models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -13,6 +14,8 @@ public class MovieCache {
 
     private String name;
     private String description;
+
+    @Indexed(expireAfterSeconds = 86400)
     private Instant cachedAt;
 
     public MovieCache() {}
