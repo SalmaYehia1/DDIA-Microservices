@@ -1,0 +1,8 @@
+
+The following files have been resolved:
+   org.springframework.boot:spring-boot-starter-web:jar:2.5.4:compile[36m -- module spring.boot.starter.web[0;1m [auto][m
+   org.springframework.boot:spring-boot-starter-test:jar:2.5.4:test[36m -- module spring.boot.starter.test[0;1m [auto][m
+   org.springframework.boot:spring-boot-starter-data-mongodb:jar:2.5.4:compile[36m -- module spring.boot.starter.data.mongodb[0;1m [auto][m
+   org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:jar:3.0.3:compile[36m -- module spring.cloud.starter.netflix.eureka.client[0;1;33m (auto)[m
+   org.springframework.cloud:spring-cloud-starter-netflix-hystrix:jar:2.2.9.RELEASE:compile[36m -- module spring.cloud.starter.netflix.hystrix[0;1;33m (auto)[m
+

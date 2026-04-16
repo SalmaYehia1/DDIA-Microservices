@@ -20,11 +20,15 @@ public class MovieResource {
 
     private final RestTemplate restTemplate;
     private final MovieCacheRepository cacheRepository;
+    private final FakeMovieResource fakeMovieResource; // Added for fallback
 
+    // Constructor Injection
     public MovieResource(RestTemplate restTemplate,
-                         MovieCacheRepository cacheRepository) {
+                         MovieCacheRepository cacheRepository,
+                         FakeMovieResource fakeMovieResource) {
         this.restTemplate = restTemplate;
         this.cacheRepository = cacheRepository;
+        this.fakeMovieResource = fakeMovieResource;
     }
 
     @RequestMapping("/{movieId}")
@@ -34,7 +38,7 @@ public class MovieResource {
         Optional<MovieCache> cachedMovie = cacheRepository.findById(movieId);
 
         if (cachedMovie.isPresent()) {
-            System.out.println("Fetched from MongoDB cache");
+            System.out.println("⚡ Fetching from MongoDB cache: " + movieId);
             MovieCache cache = cachedMovie.get();
             return new Movie(
                     cache.getMovieId(),
@@ -43,33 +47,44 @@ public class MovieResource {
             );
         }
 
-        // 2️⃣ Not in cache → Call TMDB
-        System.out.println("Calling TMDB API");
+        // 2️⃣ Try calling TMDB API
+        try {
+            System.out.println("🌐 Calling TMDB API for: " + movieId);
+            final String url = "https://api.themoviedb.org/3/movie/"
+                    + movieId + "?api_key=" + apiKey;
 
-        final String url = "https://api.themoviedb.org/3/movie/"
-                + movieId + "?api_key=" + apiKey;
+            MovieSummary movieSummary = restTemplate.getForObject(url, MovieSummary.class);
 
-        MovieSummary movieSummary =
-                restTemplate.getForObject(url, MovieSummary.class);
+            if (movieSummary != null && movieSummary.getTitle() != null) {
+                Movie movie = new Movie(
+                        movieId,
+                        movieSummary.getTitle(),
+                        movieSummary.getOverview()
+                );
 
-        Movie movie = new Movie(
-                movieId,
-                movieSummary.getTitle(),
-                movieSummary.getOverview()
-        );
+                // Save to MongoDB for future use
+                saveToCache(movie);
+                return movie;
+            } else {
+                throw new Exception("Movie not found in TMDB");
+            }
 
-        // 3️⃣ Save to MongoDB
+        } catch (Exception e) {
+            // 3️⃣ FALLBACK: If TMDB fails or ID is invalid, call the Fake API logic
+            System.out.println("❌ TMDB Error for " + movieId + ": " + e.getMessage());
+            System.out.println("🔄 Falling back to FakeMovieResource...");
+            
+            // This calls your FakeMovieResource.getMovie() directly
+            return fakeMovieResource.getMovie(movieId);
+        }
+    }
+
+    private void saveToCache(Movie movie) {
         MovieCache movieCache = new MovieCache(
-                movieId,
+                movie.getMovieId(),
                 movie.getName(),
                 movie.getDescription()
         );
-
         cacheRepository.save(movieCache);
-
-        return movie;
     }
 }
-
-/*
-http://localhost:8082/movies/{1}*/
